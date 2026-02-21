@@ -1,0 +1,82 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+export default function Signup() {
+  const { signup } = useAuth();
+  const navigate = useNavigate();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await signup(name, email, password);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Signup failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="auth-page">
+      <div className="auth-card">
+        <h1>TaskTracker</h1>
+        <p className="subtitle">Create your free account</p>
+        {error && <div className="error-msg">{error}</div>}
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="name">Full Name</label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Jane Doe"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Min. 6 characters"
+              required
+            />
+          </div>
+          <button className="btn btn-primary" type="submit" disabled={loading}>
+            {loading ? 'Creating account…' : 'Create Account'}
+          </button>
+        </form>
+        <div className="auth-link">
+          Already have an account? <Link to="/login">Sign in</Link>
+        </div>
+      </div>
+    </div>
+  );
+}
